@@ -16,8 +16,7 @@ function [VBar, UBar, phiBar, psiBar, rBar, EHat, singVals, singValsHat, rSteps,
 %
 %   Copyright (c)  Meilei Jiang 2018
 
-    
-    
+
     [d, n] = size(X);
     mindn = min(d,n) ;
     % X = X - repmat(mean(X,2), 1, n) ; % Trying Column-Object Centering
@@ -28,9 +27,10 @@ function [VBar, UBar, phiBar, psiBar, rBar, EHat, singVals, singValsHat, rSteps,
         cull = 0.5 ;
     end
     
-    
+    sigma = 1
+
     if ~exist('noiselvl', 'var')
-        [singValsHat,noiselvl] = optimal_shrinkage(singVals, beta, 'op', percentile);
+        [singValsHat,noiselvl] = optimal_shrinkage(singVals, beta, 'op', percentile, sigma); %emma change
     else
         if noiselvl == 'ks'
             noiselvl = ksOpt(singVals, beta) ;
@@ -39,6 +39,7 @@ function [VBar, UBar, phiBar, psiBar, rBar, EHat, singVals, singValsHat, rSteps,
     end
     rHat = sum(singValsHat > 0);
     fprintf('Initial singal rank for %s is %d. \n', matName, rHat);
+
     recovBound = noiselvl*(1+sqrt(beta));
     
     [UHat, ~, VHat] = svds(X, rHat);
@@ -106,10 +107,15 @@ function [VBar, UBar, phiBar, psiBar, rBar, EHat, singVals, singValsHat, rSteps,
     %
     PCAnglesCacheFullBoot = 90 * ones(nsim, rHat);
     PCAnglesCacheFullBootLoad = 90 * ones(nsim, rHat);
-    
+    Value = zeros(nsim,rHat);
+    ValueLoad = zeros(nsim, rHat);
+    clampedValue = zeros(nsim,rHat);
+    clampedValueLoad = zeros(nsim, rHat);
+
     fprintf('Progress Through Bootstraped Matrices:\n');
     fprintf(['\n' repmat('.',1,nsim) '\n\n']);
     
+    %changed from parfor
     parfor s = 1:nsim  
         randV = randn(n, rHat);
         if colCent
@@ -124,12 +130,16 @@ function [VBar, UBar, phiBar, psiBar, rBar, EHat, singVals, singValsHat, rSteps,
         randX = randU * diag(singValsTilde) * randV' + EHatImpute;
         [randUHat, ~, randVHat] = svds(randX, rHat);
         for j=1:rHat
-            PCAnglesCacheFullBoot(s,j) = acosd(min(svd(randV' * randVHat(:,1:j))));
-            PCAnglesCacheFullBootLoad(s,j) = acosd(min(svd(randU' * randUHat(:,1:j)))) ;
+            Value(s,j) = min(svd(randV' * randVHat(:,1:j)));
+            clampedValue(s,j) = max(-1, min(1, Value(s,j))); % make sure the the minimum is between 1 and -1
+            PCAnglesCacheFullBoot(s,j) = acosd(clampedValue(s,j));
+
+            ValueLoad(s,j) = min(svd(randU' * randUHat(:,1:j)));
+            clampedValueLoad(s,j) = max(-1, min(1, ValueLoad(s,j))); % make sure the the minimum is between 1 and -1
+            PCAnglesCacheFullBootLoad(s,j) = acosd(clampedValueLoad(s,j));
         end
         fprintf('\b|\n');
     end
-    
     rBar = sum(quantile(PCAnglesCacheFullBoot, 0.95, 1)<randAngle*cull) ;
     rBarLoad = sum(quantile(PCAnglesCacheFullBootLoad, 0.95, 1)<randAngleLoad*cull) ;
     %}

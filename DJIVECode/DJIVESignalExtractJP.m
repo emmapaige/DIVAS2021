@@ -26,7 +26,7 @@ function [VBars, UBars, phiBars, psiBars, EHats, rBars, singVals, singValsHat, r
     singValsHat = cell(nb, 1);
     rSteps = cell(nb, 1);
     VVHatCacheBars = cell(nb, 1);
-    UUHatCacheBars = cell(nb, 1);
+    UUHatCacheBars = cell(nb, 1);  
 
     for ib = 1:nb
         fprintf('Signal estimation for %s\n', dataname{ib});
