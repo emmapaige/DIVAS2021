@@ -26,7 +26,7 @@ function [VBars, UBars, phiBars, psiBars, EHats, rBars, singVals, singValsHat, r
     singValsHat = cell(nb, 1);
     rSteps = cell(nb, 1);
     VVHatCacheBars = cell(nb, 1);
-    UUHatCacheBars = cell(nb, 1);
+    UUHatCacheBars = cell(nb, 1);  
 
     for ib = 1:nb
         fprintf('Signal estimation for %s\n', dataname{ib});
@@ -34,17 +34,14 @@ function [VBars, UBars, phiBars, psiBars, EHats, rBars, singVals, singValsHat, r
         d = size(datablockc, 1) ;
         n = size(datablockc, 2) ;
         percentile = noisepercentile(ib);
-        noiselvl = noiselvls(ib);
-        
-        
      
-
+    
         if ~exist('noiselvls', 'var')
             [VBars{ib}, UBars{ib}, phiBars(ib), psiBars(ib), rBars(ib), EHats{ib}, singVals{ib}, singValsHat{ib}, rSteps{ib}, VVHatCacheBars{ib}, UUHatCacheBars{ib}] = ...
                 MatSignalExtractJP(datablockc, dataname{ib}, nsim, colCent, rowCent, cull, percentile);
         else
             [VBars{ib}, UBars{ib}, phiBars(ib), psiBars(ib), rBars(ib), EHats{ib}, singVals{ib}, singValsHat{ib}, rSteps{ib}, VVHatCacheBars{ib}, UUHatCacheBars{ib}] = ...
-                MatSignalExtractJP(datablockc, dataname{ib}, nsim, colCent, rowCent, cull, noiselvl, percentile);
+                MatSignalExtractJP(datablockc, dataname{ib}, nsim, colCent, rowCent, cull, noiselvls{ib});
         end  
     end
     

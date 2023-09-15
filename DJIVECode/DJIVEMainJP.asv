@@ -42,16 +42,10 @@ function outstruct = DJIVEMainJP(datablock, paramstruct, truth)
 %
 %    figdir            Folder location for optimization figures
 %
-%    colCent           Boolean, whether blocks should be object centered
-%
-%    rowCent           Boolean, whether blocks should be trait centered
-% (as with other Marron software, rows are traits and columns are objects)
-%
-%    filterPerc        Percentage of RDB set as max for perturbation angle
+%    colCent           Boolean, whether data blocks should be object cent
 %
 %   Copyright (c)  Meilei Jiang 2018, Jack Prothero 2020
 
-    disp('DIVAS Version 11-18-22 `Submission!`')
     % Initialize parameters
     nb = length(datablock); 
     dataname = cell(nb, 1);
@@ -62,13 +56,9 @@ function outstruct = DJIVEMainJP(datablock, paramstruct, truth)
     theta0 = 45;
     optArgin = {0.5 1000 1.05 50 1e-3 1e-3};
     iprint = true;
-    colCent = 0;
-    rowCent = 0;
+    colCent = 1;
+    rowCent = 1;
     figdir = '';
-    filterPerc = 1 - (2/(1+sqrt(5))) ; % "Golden Ratio"
-    %set a default
-    noisepercentile = repmat(0.5, [1,nb]);
-    noiselvls = repmat(NaN, [1,nb]);
     
     if exist('paramstruct', 'var')
         if isfield(paramstruct, 'dataname')
@@ -102,22 +92,6 @@ function outstruct = DJIVEMainJP(datablock, paramstruct, truth)
         if isfield(paramstruct, 'rowCent')
             rowCent = paramstruct.rowCent;
         end
-        
-        if isfield(paramstruct, 'filterPerc')
-            filterPerc = paramstruct.filterPerc;
-        end
-
-        if isfield(paramstruct, 'noisepercentile')
-            %vector with percentile of empiracle singular value to be
-            %used in noise estimation specific to each block
-            noisepercentile = paramstruct.noisepercentile;
-        end
-
-        if isfield(paramstruct, 'noiselvls')
-            %vector of known sigmas if we do not need to estimate 
-            noiselvls = paramstruct.noiselvls;
-        end
-
     end
     
     rowSpaces = cell(nb, 1);
@@ -133,34 +107,24 @@ function outstruct = DJIVEMainJP(datablock, paramstruct, truth)
         end
     end
     
+    goldenRatio = 1 - (2/(1+sqrt(5))) ;
+    
     % Step 1: Estimate signal space and perturbation angle
     [VBars, UBars, phiBars, psiBars, EHats, rBars, singVals, singValsHat, rSteps, VVHatCacheBars, UUHatCacheBars] = ...
-        DJIVESignalExtractJP(datablockc, dataname, nsim, 0, colCent, rowCent, filterPerc, noisepercentile, noiselvls);
-    
+        DJIVESignalExtractJP(datablockc, dataname, nsim, 0, 1, 1, goldenRatio);
+    save demoFinalSigExt.mat VBars UBars phiBars psiBars EHats rBars singVals singValsHat rSteps
+    save cachedBootCullDemoFinal.mat VVHatCacheBars UUHatCacheBars
+
     delete(gcp('nocreate'))
     
     % Step 2: Estimate joint ( and partially joint ) structure
     [outMap, keyIdxMap, anglesMap, jointBlockOrder] = DJIVEJointStrucEstimateJPLoadInfo( ...
         VBars, UBars, phiBars, psiBars, rBars, datablockc, dataname, theta0, optArgin, iprint, figdir);
-   
+    save jointEstimateMortSwissGoldSimpleSigLoadInfoSlackScaleOrthInit outMap keyIdxMap anglesMap jointBlockOrder
+
     % Step 3: Reconstruct DJIVE decomposition
     outstruct = DJIVEReconstructMJ(datablockc, dataname, outMap, ...
         keyIdxMap, jointBlockOrder, 0);
-    
-    outstruct.rBars = rBars ;
-    outstruct.phiBars = phiBars ;
-    outstruct.psiBars = psiBars ;
-    outstruct.VBars = VBars ;
-    outstruct.UBars = UBars ;
-    outstruct.VVHatCacheBars = VVHatCacheBars ;
-    outstruct.UUHatCacheBars = UUHatCacheBars ;
-    outstruct.jointBasisMapRaw = outMap ;
-    
-    %{
-    save SigExt.mat VBars UBars phiBars psiBars EHats rBars singVals singValsHat rSteps
-    save cachedBootCull.mat VVHatCacheBars UUHatCacheBars
-    save jointEstimate outMap keyIdxMap anglesMap jointBlockOrder
-    save loadEstimate outstruct
-    %}
+    save loadEstimateTCGAFinal35 outstruct
 
 end
