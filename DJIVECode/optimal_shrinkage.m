@@ -58,8 +58,9 @@ assert(beta>0)
 assert(numel(singvals)==length(singvals))
 assert(ismember(loss,{'fro','op','nuc'}))
 
+
 % estimate sigma if needed
-if nargin<5
+if isnan(sigma)
     warning('off','MATLAB:quadl:MinStepSize')
     MPmedian = MedianMarcenkoPastur(beta);
     %this is where we manipulate numerator for noise variance

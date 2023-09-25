@@ -111,6 +111,18 @@ function outstruct = DJIVEMainJP(datablock, paramstruct, truth)
             noisepercentile = paramstruct.noisepercentile;
         end
     end
+
+    % noiselvls provides prior standard deviations of each noise matrix
+    % NaN is the default for each block and means sigma needs to be
+    % estimated
+    if isfield(paramstruct, 'noiselvls')
+    noiselvls = paramstruct.noiselvls;
+    else
+    noiselvls = arrayfun(@(x) {NaN}, 1:nb); 
+    end
+
+
+
     
     rowSpaces = cell(nb, 1);
     datablockc = cell(nb, 1);
@@ -127,7 +139,7 @@ function outstruct = DJIVEMainJP(datablock, paramstruct, truth)
     
     % Step 1: Estimate signal space and perturbation angle
     [VBars, UBars, phiBars, psiBars, EHats, rBars, singVals, singValsHat, rSteps, VVHatCacheBars, UUHatCacheBars] = ...
-        DJIVESignalExtractJP(datablockc, dataname, nsim, 0, colCent, rowCent, filterPerc, noisepercentile);
+        DJIVESignalExtractJP(datablockc, dataname, nsim, 0, colCent, rowCent, filterPerc, noisepercentile, noiselvls);
     
     delete(gcp('nocreate'))
     

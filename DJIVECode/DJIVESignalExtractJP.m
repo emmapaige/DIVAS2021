@@ -35,15 +35,27 @@ function [VBars, UBars, phiBars, psiBars, EHats, rBars, singVals, singValsHat, r
         n = size(datablockc, 2) ;
         percentile = noisepercentile(ib);
      
-    
-        if ~exist('noiselvls', 'var')
+%     
+%         if ~exist('noiselvls', 'var')
+%             [VBars{ib}, UBars{ib}, phiBars(ib), psiBars(ib), rBars(ib), EHats{ib}, singVals{ib}, singValsHat{ib}, rSteps{ib}, VVHatCacheBars{ib}, UUHatCacheBars{ib}] = ...
+%                 MatSignalExtractJP(datablockc, dataname{ib}, nsim, colCent, rowCent, cull, percentile);
+%         else
+%             [VBars{ib}, UBars{ib}, phiBars(ib), psiBars(ib), rBars(ib), EHats{ib}, singVals{ib}, singValsHat{ib}, rSteps{ib}, VVHatCacheBars{ib}, UUHatCacheBars{ib}] = ...
+%                 MatSignalExtractJP(datablockc, dataname{ib}, nsim, colCent, rowCent, cull, noiselvls{ib});
+%         end  
+%     end
+
+
+%         if isnan(noiselvls{ib})
+%             [VBars{ib}, UBars{ib}, phiBars(ib), psiBars(ib), rBars(ib), EHats{ib}, singVals{ib}, singValsHat{ib}, rSteps{ib}, VVHatCacheBars{ib}, UUHatCacheBars{ib}] = ...
+%                 MatSignalExtractJP(datablockc, dataname{ib}, nsim, colCent, rowCent, cull, percentile)
+%         else
             [VBars{ib}, UBars{ib}, phiBars(ib), psiBars(ib), rBars(ib), EHats{ib}, singVals{ib}, singValsHat{ib}, rSteps{ib}, VVHatCacheBars{ib}, UUHatCacheBars{ib}] = ...
-                MatSignalExtractJP(datablockc, dataname{ib}, nsim, colCent, rowCent, cull, percentile);
-        else
-            [VBars{ib}, UBars{ib}, phiBars(ib), psiBars(ib), rBars(ib), EHats{ib}, singVals{ib}, singValsHat{ib}, rSteps{ib}, VVHatCacheBars{ib}, UUHatCacheBars{ib}] = ...
-                MatSignalExtractJP(datablockc, dataname{ib}, nsim, colCent, rowCent, cull, noiselvls{ib});
-        end  
+                MatSignalExtractJP(datablockc, dataname{ib}, nsim, colCent, rowCent, cull, percentile, noiselvls(ib))
+
+%         end
     end
+
     
     if iplot==1
         for ib = 1:nb
@@ -73,4 +85,4 @@ function [VBars, UBars, phiBars, psiBars, EHats, rBars, singVals, singValsHat, r
             title([matName ' Singular Value Shrinkage & Culling'])
         end
     end
-end
+

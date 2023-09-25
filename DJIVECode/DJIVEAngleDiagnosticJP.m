@@ -307,6 +307,7 @@ for k = 1:(2^nb-1)
                 bootCache = VVHatCacheBars{ib};
                 bootCacheLoad = UUHatCacheBars{ib};
                 
+
                 fprintf('Progress Through Bootstraped Matrices:\n');
                 fprintf(['\n' repmat('.',1,nsim) '\n\n']);
                 parfor i = 1:nsim
@@ -316,8 +317,21 @@ for k = 1:(2^nb-1)
                     precos(i,:) = sqrt(sum((bootMat*omegaHat).^2,1))./sqrt(sum(omegaHat.^2,1));
                     precosLoad(i,:) = sqrt(sum((bootMatLoad*omegaHatLoad).^2,1))./sqrt(sum(omegaHatLoad.^2,1));
                     
-                    thetaTwoStarsBoot(i,:) = acosd(sqrt(sum((bootMat*omegaHat).^2,1))./sqrt(sum(omegaHat.^2,1)));
-                    thetaTwoStarsBootLoad(i,:) = acosd(sqrt(sum((bootMatLoad*omegaHatLoad).^2,1))./sqrt(sum(omegaHatLoad.^2,1)));
+                    % omegaHatLoad, omegaHat are sometimes zero 
+
+                    if sum(omegaHat.^2,1) == 0
+                        epsilon = 1e-10 * ones(1,size(omegaHat,2));
+                        thetaTwoStarsBoot(i,:) = acosd(min(1,max(-1,sqrt(sum((bootMat*omegaHat).^2,1))./sqrt(sum(omegaHat.^2,1)+epsilon)))); % Take in values between -1 and 1
+                    else
+                        thetaTwoStarsBoot(i,:) = acosd(min(1,max(-1,sqrt(sum((bootMat*omegaHat).^2,1))./sqrt(sum(omegaHat.^2,1))))); % Take in values between -1 and 1
+                    end
+
+                    if sum(omegaHatLoad.^2,1) == 0
+                        epsilonLoad = 1e-10 * ones(1,size(omegaHatLoad,2));
+                        thetaTwoStarsBootLoad(i,:) = acosd(min(1,max(-1,sqrt(sum((bootMatLoad*omegaHatLoad).^2,1))./sqrt(sum(omegaHatLoad.^2,1)+epsilonLoad)))); % Take in values between -1 and 1
+                    else
+                        thetaTwoStarsBootLoad(i,:) = acosd(min(1,max(-1,sqrt(sum((bootMatLoad*omegaHatLoad).^2,1))./sqrt(sum(omegaHatLoad.^2,1))))); % Take in values between -1 and 1
+                    end
                     
                     fprintf('\b|\n');
                 end
