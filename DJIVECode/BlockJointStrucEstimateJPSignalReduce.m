@@ -183,6 +183,7 @@ function [Vi, angles] = BlockJointStrucEstimateJPSignalReduce(blockIn, datablock
         if converge<=1
             angleHats = ccpOutAnalysisMJ(cache_v, VBars);
             %angleTrues = ccpOutAnalysisMJ(cache_v, rowSpaces);
+            angleHats
             figname = strjoin({strjoin(blockName, '-'), '-joint-optV', ...
                 num2str(j)}, '');
             ccpOutVisualMJ(angleHats, phiBars, dataname, iprint, figdir, figname);%, angleTrues);

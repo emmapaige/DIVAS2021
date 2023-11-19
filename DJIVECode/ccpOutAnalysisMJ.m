@@ -20,6 +20,8 @@ function angleHats = ccpOutAnalysisMJ(cache_v, VBars)
             angles(t) = projAngleMJ(cache_v{t}, VBars{ib});
         end
         angleHats{ib} = angles;
+        % Quick check for imaginary angles that should not be here
+        any(imag(angleHats{ib}(:)))
     end
 end
 

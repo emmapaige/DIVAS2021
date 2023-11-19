@@ -1,4 +1,4 @@
-function [VBar, UBar, phiBar, psiBar, rBar, EHat, singVals, singValsHat, rSteps, VVHatCacheBar, UUHatCacheBar] = MatSignalExtractJP(X, matName, nsim, colCent, rowCent, cull, percentile, noiselvl)
+function [VBar, UBar, phiBar, psiBar, rBar, EHat, singVals, singValsHat, rSteps, VVHatCacheBar, UUHatCacheBar, rmse, rHat] = MatSignalExtractJP(X, matName, nsim, colCent, rowCent, cull, percentile, noiselvl)
 % MatSignalExtractMJ   Matrix signal extraction
 %   Estimate signal rank, signal row space, corresponding perturbation
 %   angle and noise matrix. Adjust signals based on random direction angle.
@@ -50,7 +50,16 @@ function [VBar, UBar, phiBar, psiBar, rBar, EHat, singVals, singValsHat, rSteps,
     [UHat, ~, VHat] = svds(X, rHat);
     singValsTilde = singValsHat(1:rHat);
     AHat = UHat * diag(singValsTilde) * VHat';
+
     EHat = X - AHat ;
+
+    % temporary addition note I also added function input rmse for
+    % MatSignalExtractJP.m
+    [m, n] = size(EHat) 
+    rmse = sqrt(sum(sum(abs(EHat).^2)) / (m));
+    %frobeniusNormOfE = norm(EHat, 'fro');
+
+
     EHatGood = UFull(:,(rHat+1):mindn) * diag(singVals((rHat+1):mindn)) * VFull(:,(rHat+1):mindn)' ;
     XRemaining = X - EHatGood ;
 
@@ -135,11 +144,11 @@ function [VBar, UBar, phiBar, psiBar, rBar, EHat, singVals, singValsHat, rSteps,
         [randUHat, ~, randVHat] = svds(randX, rHat);
         for j=1:rHat
             Value(s,j) = min(svd(randV' * randVHat(:,1:j)));
-            clampedValue(s,j) = max(-1, min(1, Value(s,j))); % make sure the the minimum is between 1 and -1
+            clampedValue(s,j) = min(1, max(-1, Value(s,j))); % make sure the the minimum is between 1 and -1
             PCAnglesCacheFullBoot(s,j) = acosd(clampedValue(s,j));
 
             ValueLoad(s,j) = min(svd(randU' * randUHat(:,1:j)));
-            clampedValueLoad(s,j) = max(-1, min(1, ValueLoad(s,j))); % make sure the the minimum is between 1 and -1
+            clampedValueLoad(s,j) = min(1, max(-1, ValueLoad(s,j))); % make sure the the minimum is between 1 and -1
             PCAnglesCacheFullBootLoad(s,j) = acosd(clampedValueLoad(s,j));
         end
         fprintf('\b|\n');

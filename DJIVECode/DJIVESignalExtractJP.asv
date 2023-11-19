@@ -65,7 +65,7 @@ bigStruct.sigma = noiselvls;
                                        'rSteps', rSteps{ib}, 'rmese',rmse{ib}, 'rHat',rHat{ib});
     end
 
-save('allDataStructs4update.mat', 'bigStruct')
+save('allDataStructs10.mat', 'bigStruct')
     
     if iplot==1
         for ib = 1:nb

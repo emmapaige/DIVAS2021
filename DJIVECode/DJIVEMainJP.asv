@@ -112,11 +112,14 @@ function outstruct = DJIVEMainJP(datablock, paramstruct, truth)
         end
     end
 
-if isfield(paramstruct, 'noiselvls')
+    % noiselvls provides prior standard deviations of each noise matrix
+    % NaN is the default for each block and means sigma needs to be
+    % estimated
+    if isfield(paramstruct, 'noiselvls')
     noiselvls = paramstruct.noiselvls;
-else
+    else
     noiselvls = arrayfun(@(x) {NaN}, 1:nb); 
-end
+    end
 
 
 

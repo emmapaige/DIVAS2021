@@ -12,6 +12,7 @@ function angle = projAngleMJ(x, V)
 %   Copyright (c)  Meilei Jiang 2018
 
     px = V * V' * x;
-    angle = acosd(px' * x / (norm(px) * norm(x)) );
+    %fix here
+    angle = acosd(min(1, max(-1, px' * x / (norm(px) * norm(x)))));
 end
 
